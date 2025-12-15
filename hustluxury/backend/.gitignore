@@ -1,0 +1,31 @@
+# --- 1. File biên dịch & Build (Maven) ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+*.class
+
+# --- 2. File cấu hình của IDE (IntelliJ, Eclipse, VSCode) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# --- 3. File hệ thống (Mac/Windows) ---
+.DS_Store
+Thumbs.db
+
+# --- 4. Logs (Nhật ký chạy phần mềm) ---
+logs/
+*.log
+
+# --- 5. QUAN TRỌNG: CÁC FILE CHỨA MẬT KHẨU/BIẾN MÔI TRƯỜNG ---
+.env
+.env.*
+env.properties
+*.secret
+application-prod.properties
