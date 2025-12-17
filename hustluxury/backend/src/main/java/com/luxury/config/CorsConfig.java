@@ -15,7 +15,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Cho phép frontend React gọi API
-        config.addAllowedOrigin("http://localhost:3000,http://localhost:5173");
+        config.addAllowedOrigin("http://localhost:3000,http://localhost:5173,https://hust-luxury-frontend.vercel.app");
 
         // Cho phép các HTTP methods
         config.addAllowedMethod("GET");
