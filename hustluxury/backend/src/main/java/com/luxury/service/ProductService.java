@@ -111,7 +111,11 @@ public class ProductService {
     }).collect(Collectors.toList());
 }
 
-
+    public List<ProductResponseDTO> getAllProductsDTO() {
+        return productRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
     // POST - Tạo sản phẩm mới
     public Long createProduct(ProductCreateRequest request) {

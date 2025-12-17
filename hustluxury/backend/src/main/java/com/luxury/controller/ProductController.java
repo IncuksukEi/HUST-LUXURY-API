@@ -14,6 +14,12 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @GetMapping
+    public List<ProductResponseDTO> getAllProducts() {
+        // Bạn có thể dùng lại hàm search với query rỗng để lấy tất cả
+        // Hoặc gọi hàm getAllProducts() nếu bên Service đã có
+        return productService.getAllProductsDTO();
+    }
     // Tìm kiếm sản phẩm theo từ khoá hoặc category
     @GetMapping("/search")
     public List<ProductResponseDTO> searchProducts(@RequestParam("q") String query) {
