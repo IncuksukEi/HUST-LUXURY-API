@@ -13,26 +13,26 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        
+
         // Cho phép frontend React gọi API
-        config.addAllowedOrigin("http://localhost:3000");
-        
+        config.addAllowedOrigin("http://localhost:3000,http://localhost:5173");
+
         // Cho phép các HTTP methods
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PUT");
         config.addAllowedMethod("DELETE");
         config.addAllowedMethod("OPTIONS");
-        
+
         // Cho phép các headers
         config.addAllowedHeader("*");
-        
+
         // Cho phép gửi credentials (cookies, authorization headers)
         config.setAllowCredentials(true);
-        
+
         // Thời gian cache CORS configuration
         config.setMaxAge(3600L);
-        
+
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
