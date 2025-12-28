@@ -3,7 +3,6 @@ package com.luxury.controller;
 import com.luxury.dto.ProductCreateRequest;
 import com.luxury.dto.ProductListResponse;
 import com.luxury.entity.Product;
-import com.luxury.repository.AdProductRepository;
 import com.luxury.service.CloudinaryService;
 import com.luxury.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,55 +18,54 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/products")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')") // Chỉ Admin mới được truy cập
 public class AdminProductController {
 
     @Autowired
     private ProductService productService;
 
     @Autowired
-    private AdProductRepository productRepository;
-
-    @Autowired
     private CloudinaryService cloudinaryService;
 
     // --- 1. LẤY DANH SÁCH SẢN PHẨM ---
+    // Service đã tự động map ID -> Tên (Vàng, Bạc, Bộ sưu tập...)
     @GetMapping
     public ResponseEntity<List<ProductListResponse>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProductsForAdmin());
     }
 
     // --- 2. TẠO SẢN PHẨM MỚI (KÈM UPLOAD ẢNH) ---
-    // Method: POST
-    // Sử dụng @ModelAttribute để nhận cả file và dữ liệu text cùng lúc
+    // Frontend gửi: name, price, categoryId, collectionId, materialId, file (ảnh)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createProduct(
             @ModelAttribute ProductCreateRequest dto,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
         try {
-            // Nếu có file ảnh được gửi lên -> Upload và lấy link
+            // 1. Upload ảnh lên Cloudinary (nếu có)
             if (file != null && !file.isEmpty()) {
                 String imageUrl = cloudinaryService.uploadImage(file);
                 dto.setUrlImg(imageUrl);
             }
 
-            // Lưu sản phẩm vào DB
+            // 2. Gọi Service tạo sản phẩm
+            // Lưu ý: Service sẽ tự map collectionId -> category_id_combo
             Long newId = productService.createProduct(dto);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Thêm sản phẩm thành công",
+                    "message", "Thêm sản phẩm trang sức thành công",
                     "product_id", newId
             ));
 
         } catch (Exception e) {
+            e.printStackTrace(); // Log lỗi ra console để debug
             return ResponseEntity.status(500).body(Map.of("error", "Lỗi xử lý: " + e.getMessage()));
         }
     }
 
-    // --- 3. CẬP NHẬT SẢN PHẨM (KÈM UPLOAD ẢNH) ---
-    // Method: POST (Lưu ý: Dùng POST với đường dẫn /update/{id} thay vì PUT để tránh lỗi file)
+    // --- 3. CẬP NHẬT SẢN PHẨM ---
+    // Dùng POST /update/{id} thay vì PUT để tránh lỗi trình duyệt với Multipart form
     @PostMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
@@ -75,15 +73,17 @@ public class AdminProductController {
             @RequestParam(value = "file", required = false) MultipartFile file
     ) {
         try {
-            // Bước 1: Xử lý ảnh (Nếu có ảnh mới thì upload, không thì thôi)
+            // 1. Xử lý ảnh mới (nếu có)
             if (file != null && !file.isEmpty()) {
                 String imageUrl = cloudinaryService.uploadImage(file);
                 dto.setUrlImg(imageUrl);
             }
-            // Nếu file null -> dto.urlImg sẽ null -> ProductService sẽ giữ nguyên ảnh cũ.
+            // Nếu file null -> dto.urlImg null -> Service sẽ giữ lại ảnh cũ trong DB
 
-            // Bước 2: Gọi Service cập nhật
+            // 2. Convert DTO -> Entity (Lúc này collectionId được map vào category_id_combo)
             Product productToUpdate = dto.toProduct();
+
+            // 3. Gọi Service cập nhật
             productService.updateProduct(id, productToUpdate);
 
             return ResponseEntity.ok(Map.of(
@@ -93,6 +93,7 @@ public class AdminProductController {
             ));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Lỗi cập nhật: " + e.getMessage()));
         }
     }
@@ -104,8 +105,9 @@ public class AdminProductController {
             productService.deleteProduct(id);
             return ResponseEntity.ok(Map.of("message", "Đã xóa sản phẩm thành công"));
         } catch (DataIntegrityViolationException e) {
+            // Lỗi này xảy ra nếu sản phẩm đã có trong đơn hàng (không thể xóa vật lý)
             return ResponseEntity.badRequest().body(
-                    Map.of("error", "Không thể xóa sản phẩm này vì đang nằm trong đơn hàng lịch sử.")
+                    Map.of("error", "Không thể xóa sản phẩm này vì đã có lịch sử giao dịch.")
             );
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
