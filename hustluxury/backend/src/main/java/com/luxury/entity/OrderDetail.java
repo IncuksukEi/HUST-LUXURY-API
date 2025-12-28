@@ -27,7 +27,7 @@ public class OrderDetail {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "total_price", precision = 10, scale = 2)
+    @Column(name = "total_price", precision = 15, scale = 2)
     private BigDecimal totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
