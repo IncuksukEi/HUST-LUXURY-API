@@ -28,7 +28,7 @@ public class HustluxuryApplication {
                 admin.setRole(User.Role.ADMIN);
                 admin.setGender(User.Gender.MALE);
                 userRepository.save(admin);
-                System.out.println(">>> Đã tạo tài khoản ADMIN thành công: " + adminEmail + " | Pass: 123456");
+                System.out.println(">>> Đã tạo tài khoản ADMIN thành công: " + adminEmail + " | Pass: 12345");
             }
         };
     }

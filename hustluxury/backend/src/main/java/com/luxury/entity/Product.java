@@ -31,9 +31,10 @@ public class Product {
     @Column(name = "category_id", nullable = false)
     private Long categoryId;
 
-    @Column(name = "category_id_combo", nullable = false)
+    // Sửa: Bỏ "nullable = false" đi
+    @Column(name = "category_id_combo")
     private Long category_id_combo;
-
+    
     @Column(name = "category_id_uu_dai")
     private Long category_id_uu_dai;
 
