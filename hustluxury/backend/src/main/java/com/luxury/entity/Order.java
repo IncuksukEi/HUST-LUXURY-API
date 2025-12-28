@@ -30,7 +30,7 @@ public class Order {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "total_price", precision = 10, scale = 2)
+    @Column(name = "total_price", precision = 15, scale = 2)
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)

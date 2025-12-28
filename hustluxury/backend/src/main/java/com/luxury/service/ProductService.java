@@ -25,6 +25,13 @@ public class ProductService {
             "ga-ran", "burger", "thuc-an-nhe", "do-uong"
     );
 
+    public List<ProductResponseDTO> getProductsByCategoryId(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        return products.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<ProductResponseDTO> searchProducts(String query) {
         String q = query.trim().toLowerCase();
         List<Product> products;
@@ -39,7 +46,6 @@ public class ProductService {
             } else {
                 products = productRepository.findByCategoryQuery(q);
             }
-
         } else {
             products = productRepository.searchProductsByKeyword(q);
         }
@@ -61,13 +67,11 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // --- [FIX] SỬA LẠI LOGIC UPDATE ĐỂ GIỮ ẢNH CŨ ---
+    // --- LOGIC CẬP NHẬT (Giữ ảnh cũ nếu không chọn ảnh mới) ---
     public Product updateProduct(Long id, Product newProductData) {
-        // 1. Tìm sản phẩm cũ trong DB
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
-        // 2. Cập nhật thông tin (trừ ID và SoldQuantity)
         existing.setName(newProductData.getName());
         existing.setDescription(newProductData.getDescription());
         existing.setPrice(newProductData.getPrice());
@@ -76,16 +80,12 @@ public class ProductService {
         existing.setCategory_id_uu_dai(newProductData.getCategory_id_uu_dai());
         existing.setCategory_id_combo(newProductData.getCategory_id_combo());
 
-        // 3. LOGIC QUAN TRỌNG: Chỉ cập nhật ảnh nếu có link mới
-        // Nếu newProductData.getUrlImg() là null (do Admin không upload ảnh mới),
-        // thì giữ nguyên ảnh cũ (existing.getUrlImg())
         if (newProductData.getUrlImg() != null && !newProductData.getUrlImg().isEmpty()) {
             existing.setUrlImg(newProductData.getUrlImg());
         }
 
         return productRepository.save(existing);
     }
-    // --------------------------------------------------
 
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
@@ -108,7 +108,6 @@ public class ProductService {
         return dto;
     }
 
-    // GET - Lấy danh sách sản phẩm (cho admin)
     public List<ProductListResponse> getAllProductsForAdmin() {
         return productRepository.findAll().stream().map(product -> {
             ProductListResponse dto = new ProductListResponse();
@@ -132,7 +131,6 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    // POST - Tạo sản phẩm mới
     public Long createProduct(ProductCreateRequest request) {
         Product product = new Product();
         product.setName(request.getName());
@@ -142,10 +140,7 @@ public class ProductService {
         product.setCategoryId(request.getCategoryId());
         product.setCategory_id_uu_dai(request.getCategory_id_uu_dai());
         product.setCategory_id_combo(request.getCategory_id_combo());
-
-        // Link ảnh đã được Controller xử lý qua Cloudinary và set vào request
         product.setUrlImg(request.getUrlImg());
-
         return productRepository.save(product).getProductId();
     }
 }

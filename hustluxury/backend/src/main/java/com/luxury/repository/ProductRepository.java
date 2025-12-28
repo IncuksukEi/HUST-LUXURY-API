@@ -1,13 +1,12 @@
 package com.luxury.repository;
 
 import com.luxury.entity.Product;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    List<Product> findByCategoryId(Long categoryId);
     @Query("SELECT p FROM Product p JOIN p.category c WHERE LOWER(c.query) = LOWER(:query)")
     List<Product> findByCategoryQuery(String query);
 
